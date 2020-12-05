@@ -6,7 +6,7 @@ import pytest
 
 from click.testing import CliRunner
 
-from couchfs import couchfs
+from couchfs import commands
 from couchfs import cli
 
 

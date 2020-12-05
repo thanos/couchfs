@@ -1,6 +1,6 @@
 import os
 
-from couchfs.couchfs import  CouchDBClient
+from couchfs.commands import  CouchDBClient
 
 def test_get_attachment():
     couch_uri ='couchdb://admin:R30d5tar%@127.0.0.1:5984/test'

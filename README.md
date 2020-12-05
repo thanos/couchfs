@@ -105,7 +105,7 @@ export COUCHDB_URI='couchdb://username:password@host:port/database'
 
 Or pass the connection string to `CouchDBClient` 
 ```python
-from couchfs.couchfs import CouchDBClient
+from couchfs.commands import CouchDBClient
 
 connection_str = 'couchdb://username:password@host:port/database'
 CouchDBClient(connection_str)
@@ -114,7 +114,7 @@ CouchDBClient(connection_str)
 if you whant to use another environment key you can always subclass `CouchDBClient`
 
 ```python
-from couchfs.couchfs import CouchDBClient
+from couchfs.commands import CouchDBClient
 class MyClient(CouchDBClient):
     URI_ENVIRON_KEY='MY_COUCHDB_URI'
 ```
@@ -130,7 +130,7 @@ so they are streamed down into a temporary file that is released when you exit t
 ```python
 import pandas as pd
 from requests.exceptions import RequestException
-from couchfs.couchfs import CouchDBClient, CouchDBClientException
+from couchfs.commands import CouchDBClient, CouchDBClientException
 
 doc_id = 'TAKIS'
 doc_name = 'takis/takis/catelog.csv'
@@ -147,7 +147,7 @@ For those who like to use their memory...
 
 ```python
 import json
-from couchfs.couchfs import CouchDBClient
+from couchfs.commands import CouchDBClient
 
 doc_id = 'TAKIS'
 doc_name = 'takis/takis/catelog.json'                                      
@@ -161,7 +161,7 @@ For those who like to use their memory...
 
 ```python
 import json
-from couchfs.couchfs import CouchDBClient
+from couchfs.commands import CouchDBClient
 
 doc_id = 'TAKIS'
 doc_name = 'takis/takis/catelog.json'                                      
@@ -173,7 +173,7 @@ with CouchDBClient().download_file(f'{doc_id}/{doc_name}', in_memory=True) as so
 
 ```python
 import json
-from couchfs.couchfs import CouchDBClient
+from couchfs.commands import CouchDBClient
 
 doc_id = 'TAKIS'              
 for url in CouchDBClient().attachments(f'{doc_id}/*.json'):
@@ -185,7 +185,7 @@ for url in CouchDBClient().attachments(f'{doc_id}/*.json'):
 
 ```python
 import json
-from couchfs.couchfs import CouchDBClient
+from couchfs.commands import CouchDBClient
 
 doc_id = 'TAKIS'
 attachments_path='/takis/takis'
@@ -198,7 +198,7 @@ CouchDBClient().download(f'{doc_id}/{attachments_path}', destination)
 ### Uploading an attachment
 
 ```python
-from couchfs.couchfs import CouchDBClient
+from couchfs.commands import CouchDBClient
 
 doc_id = 'TAKIS'
 attachment_path='/takis/takis'
@@ -212,7 +212,7 @@ with open(some_file, 'rb') as fp:
 
 ```python
 import json
-from couchfs.couchfs import CouchDBClient
+from couchfs.commands import CouchDBClient
 my_data = {
 'name': 'thanos'
 }
@@ -225,7 +225,7 @@ CouchDBClient().upload_bytes_file(json.dumps(my_data), f'{doc_id}/{attachment_fi
 
 ```python
 import json
-from couchfs.couchfs import CouchDBClient
+from couchfs.commands import CouchDBClient
 
 source='/User/thanos/takis'
 doc_id = 'TAKIS'
