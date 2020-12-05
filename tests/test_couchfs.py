@@ -3,10 +3,8 @@
 """Tests for `couchfs` package."""
 
 import pytest
-
 from click.testing import CliRunner
 
-from couchfs import commands
 from couchfs import cli
 
 

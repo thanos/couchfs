@@ -1,32 +1,27 @@
 """Console script for couchfs."""
 import sys
-import pprint
+
 import click
-import couchfs
 import humanize
-import tabulate
-import os, stat
-from shutil import *
-import pathlib
+
+from couchfs import api
+
 
 @click.group()
 def cli():
     pass
 
 @click.command()
-def ls():
+@click.argument('patterns', nargs=-1)
+def ls(patterns):
     rows = []
     max_len = 0
-    for file_path, size in couchfs.CouchDBClient().ls():
+    for file_path, size in api.CouchDBClient().list_attachments(*patterns):
         max_len = max(max_len, len(file_path))
         rows.append((file_path, size))
     ftr = '{file_path:%d} {size:>10}' % (max_len+3)
     for file_path, size in rows:
         click.echo(ftr.format(file_path=file_path, size=humanize.naturalsize(size)))
-
-
-
-
 
 
 @cli.command(short_help="upload files.")
@@ -41,7 +36,7 @@ def ls():
 def upload(src, dst, doc_per_path, dry_run):
     """uploads from src to dst.
     """
-    for src, dst, status,reason in couchfs.CouchDBClient().upload(src, dst, dry_run):
+    for src, dst, status,reason in api.CouchDBClient().upload(src, dst, dry_run):
         click.echo(f'{src} {dst} {status}:{reason}')
 cli.add_command(ls)
 cli.add_command(upload)
@@ -58,7 +53,7 @@ cli.add_command(upload)
 def download(src, dst, doc_per_path, dry_run):
     """uploads from src to dst.
     """
-    for src, dst, status,reason in couchfs.CouchDBClient().download(src, dst):
+    for src, dst, status,reason in api.CouchDBClient().download(src, dst):
         click.echo(f'{src} {dst} {status}:{reason}')
 
     # for src, dst, status,reason in couchfs.CouchDBClient().download(src, dst):

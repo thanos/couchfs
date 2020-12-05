@@ -105,7 +105,7 @@ export COUCHDB_URI='couchdb://username:password@host:port/database'
 
 Or pass the connection string to `CouchDBClient` 
 ```python
-from couchfs.commands import CouchDBClient
+from couchfs.api import CouchDBClient
 
 connection_str = 'couchdb://username:password@host:port/database'
 CouchDBClient(connection_str)
@@ -114,11 +114,27 @@ CouchDBClient(connection_str)
 if you whant to use another environment key you can always subclass `CouchDBClient`
 
 ```python
-from couchfs.commands import CouchDBClient
+from couchfs.api import CouchDBClient
 class MyClient(CouchDBClient):
     URI_ENVIRON_KEY='MY_COUCHDB_URI'
 ```
 
+
+### Listing your attachments
+You can use `CouchDBClient().get_attachment` to get a file handle on couchdb attachment. Attachments can be very big 
+so they are streamed down into a temporary file that is released when you exit the context.
+
+```python
+from couchfs.api import CouchDBClient
+for url, size in CouchDBClient().list_attachments():
+    print(url, size)
+for url, size in CouchDBClient().list_attachments('TV', ):
+    print(url, size)
+for url, size in CouchDBClient().list_attachments('TV', 'TAKIS'):
+    print(url, size)
+for url, size in CouchDBClient().list_attachments('TV', 'TAKIS/iamges/*.jpeg'):
+    print(url, size)
+```
 
 
 
@@ -128,16 +144,18 @@ You can use `CouchDBClient().get_attachment` to get a file handle on couchdb att
 so they are streamed down into a temporary file that is released when you exit the context.
 
 ```python
-import pandas as pd
+import csv
 from requests.exceptions import RequestException
-from couchfs.commands import CouchDBClient, CouchDBClientException
+from couchfs.api import CouchDBClient, CouchDBClientException
 
 doc_id = 'TAKIS'
 doc_name = 'takis/takis/catelog.csv'
 couch_uri ='couchdb://user:****@127.0.0.1:5984/test'
 try:
   with CouchDBClient(couch_uri).download_file(f'{doc_id}/{doc_name}') as csvfile:
-    expenses = pd.read_csv(csvfile)
+    reader = csv.reader(csvfile)
+    for row in reader:
+        print(row)
 except  (CouchDBClientException, RequestException) as error:  
     print(error)
 ```
@@ -147,7 +165,7 @@ For those who like to use their memory...
 
 ```python
 import json
-from couchfs.commands import CouchDBClient
+from couchfs.api import CouchDBClient
 
 doc_id = 'TAKIS'
 doc_name = 'takis/takis/catelog.json'                                      
@@ -161,7 +179,7 @@ For those who like to use their memory...
 
 ```python
 import json
-from couchfs.commands import CouchDBClient
+from couchfs.api import CouchDBClient
 
 doc_id = 'TAKIS'
 doc_name = 'takis/takis/catelog.json'                                      
@@ -173,19 +191,20 @@ with CouchDBClient().download_file(f'{doc_id}/{doc_name}', in_memory=True) as so
 
 ```python
 import json
-from couchfs.commands import CouchDBClient
+from couchfs.api import CouchDBClient
+do_something = lambda x: x
 
 doc_id = 'TAKIS'              
 for url in CouchDBClient().attachments(f'{doc_id}/*.json'):
     with CouchDBClient().download_file(url, in_memory=True) as somejson:
-        process(somejson)
+        do_something(somejson)
 ```
 
-### Downloading a whole load of attachmenst
+### Downloading a whole load of attachments
 
 ```python
 import json
-from couchfs.commands import CouchDBClient
+from couchfs.api import CouchDBClient
 
 doc_id = 'TAKIS'
 attachments_path='/takis/takis'
@@ -198,7 +217,7 @@ CouchDBClient().download(f'{doc_id}/{attachments_path}', destination)
 ### Uploading an attachment
 
 ```python
-from couchfs.commands import CouchDBClient
+from couchfs.api import CouchDBClient
 
 doc_id = 'TAKIS'
 attachment_path='/takis/takis'
@@ -212,20 +231,20 @@ with open(some_file, 'rb') as fp:
 
 ```python
 import json
-from couchfs.commands import CouchDBClient
+from couchfs.api import CouchDBClient
 my_data = {
 'name': 'thanos'
 }
 doc_id = 'TAKIS'
 attachment_file_name = 'takis/takis/catelog.json'
-CouchDBClient().upload_bytes_file(json.dumps(my_data), f'{doc_id}/{attachment_file_name}')
+CouchDBClient().upload_bytes_file(bytes(json.dumps(my_data), 'utf-8'), f'{doc_id}/{attachment_file_name}')
 ```
 
 ### Uploading a load of files
 
 ```python
 import json
-from couchfs.commands import CouchDBClient
+from couchfs.api import CouchDBClient
 
 source='/User/thanos/takis'
 doc_id = 'TAKIS'

@@ -25,9 +25,14 @@ class URLRequired(CouchDBClientException):
     """A valid URL is required."""
 
 
+class BadConnectionURI(CouchDBClientException):
+    """A valid URL is required."""
+
+
 class CouchDBClient:
     URI_ENVIRON_KEY = 'COUCHDB_URI'
-    URI_RE = re.compile('couchdb(s)?://((\w+)\:(.+)@)?([\w\.]+)(:(\d+))?/(\w+)')
+    CONNECTION_RE = 'couchdb(s)?://((\w+)\:(.+)@)?([\w\.]+)(:(\d+))?/(\w+)'
+    URI_RE = re.compile(CONNECTION_RE)
 
     def __init__(self, uri=None):
         if uri is None:
@@ -35,7 +40,10 @@ class CouchDBClient:
         if not uri:
             raise URLRequired(f"You can set environment varialble {self.URI_ENVIRON_KEY}")
         scheme, userid, psswd, host, port, db = self.parse_connection_uri(uri)
-        self.auth = (userid, psswd)
+        if userid and psswd:
+            self.auth = (userid, psswd)
+        else:
+            self.auth = None
         self.db = db
         self.db_uri = f'{scheme}://{host}{port}/{self.db}'
 
@@ -51,20 +59,20 @@ class CouchDBClient:
             scheme = 'http' + ('s' if ssl else '')
             port = f':{port}' if port else ''
             return scheme, userid, psswd, host, port, db
-
-
-    def list_attachments(self, pattern=None):
-        if match := self.WILDCARD_RE.search(pattern):
-            regex = re.compile(fnmatch.translate(pattern))
-            is_copying_files = True
         else:
-            regex = re.compile(fnmatch.translate(pattern)[:-2])
-            sub_regex = re.compile(pattern)
-        for file_path, _ in self.run_view():
-            if regex.search(file_path):
-                yield file_path
+            raise BadConnectionURI(f'use a connections like {self.CONNECTION_RE}')
 
-
+    def list_attachments(self, *patterns):
+        regexs = []
+        for pattern in patterns:
+            if self.WILDCARD_RE.search(pattern):
+                regex = re.compile(fnmatch.translate(pattern))
+            else:
+                regex = re.compile(fnmatch.translate(pattern)[:-2])
+            regexs.append(regex)
+        for file_path, file_size in self.run_view():
+            if not regexs or any([regex.search(file_path) for regex in regexs]):
+                yield file_path, file_size
 
     def run_view(self, **args):
         params = {'reduce': False, 'include_docs': False}
@@ -165,6 +173,12 @@ class CouchDBClient:
                     else:
                         yield self.upload_file(file_path, dest_path)
 
+    def upload_bytes_file(self, src_bytes, dst):
+        with tempfile.NamedTemporaryFile() as src_fp:
+            src_fp.name = os.path.basename(dst)
+            src_fp.write(src_bytes)
+            return self.upload_file(src_fp, dst)
+
     def upload_file(self, src, dst):
         """
         Uploads a file using dst as the doc/bucket id
@@ -184,9 +198,8 @@ class CouchDBClient:
             rev = response.json()['rev']
         else:
             rev = response.headers['ETag']
-        major, _ = mimetypes.guess_type(src)
+        major, _ = mimetypes.guess_type(src.name)
         headers = {'Content-type': f'{major}', 'If-Match': rev[1:-1]}
-        with open(src, 'rb') as f:
-            response = requests.put(f'{file_uri}', data=f, headers=headers, auth=self.auth)
-            response.raise_for_status()
-            return file_name, f'{file_uri}', response.status_code, response.reason
+        response = requests.put(f'{file_uri}', data=src, headers=headers, auth=self.auth)
+        response.raise_for_status()
+        return file_name, f'{file_uri}', response.status_code, response.reason
