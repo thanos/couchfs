@@ -185,7 +185,8 @@ class CouchDBClient:
             if dry_run:
                 yield src, dst, 'DRY RUN', ''
             else:
-                yield self.upload_file(src, os.path.join(dst, os.path.basename(src)))
+                with open(src, 'rb') as src_fp:
+                    yield self.upload_file(src_fp, os.path.join(dst, os.path.basename(src)))
         elif os.path.isdir(src):
             p = pathlib.Path(src).resolve()
             for (dirpath, dirs, files) in os.walk(src):

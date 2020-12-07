@@ -8,7 +8,7 @@ from couchfs import api
 
 
 @click.group()
-def cli():
+def couchfs():
     pass
 
 @click.command()
@@ -29,7 +29,7 @@ def ls(patterns):
         click.echo(ftr.format(file_path=file_path, size=humanize.naturalsize(size)))
 
 
-@cli.command(short_help="upload files.")
+@couchfs.command(short_help="upload files.")
 @click.option(
     "--doc_per_path", is_flag=False, help="forcibly copy over an existing managed file"
 )
@@ -43,10 +43,10 @@ def upload(src, dst, doc_per_path, dry_run):
     """
     for src, dst, status,reason in api.CouchDBClient().upload(src, dst, dry_run):
         click.echo(f'{src} {dst} {status}:{reason}')
-cli.add_command(ls)
-cli.add_command(upload)
+couchfs.add_command(ls)
+couchfs.add_command(upload)
 
-@cli.command(short_help="upload files.")
+@couchfs.command(short_help="upload files.")
 @click.option(
     "--doc_per_path", is_flag=False, help="forcibly copy over an existing managed file"
 )
@@ -63,13 +63,13 @@ def download(src, dst, doc_per_path, dry_run):
 
     # for src, dst, status,reason in couchfs.CouchDBClient().download(src, dst):
     #     click.echo(f'{src} {dst} {status}:{reason}')
-cli.add_command(ls)
-cli.add_command(upload)
-cli.add_command(download)
-cli.add_command(init)
+couchfs.add_command(ls)
+couchfs.add_command(upload)
+couchfs.add_command(download)
+couchfs.add_command(init)
 
 
 
 
 if __name__ == "__main__":
-    sys.exit(cli())  # pragma: no cover
+    sys.exit(couchfs())  # pragma: no cover
