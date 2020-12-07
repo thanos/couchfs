@@ -1,0 +1,10 @@
+{
+  "_id": "_design/views",
+  "views": {
+    "attachment_list": {
+      "reduce": "_stats",
+      "map": "function (doc) {\n if (doc._attachments) {\n   for (const file_name in doc._attachments) {\n      emit((doc._id+'/'+file_name).split('/'), doc._attachments[file_name].length);\n  }\n} else {\n  emit(doc._id.split('/'), 0)\n}\n}"
+    }
+  },
+  "language": "javascript"
+}
