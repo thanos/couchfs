@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 
 """The setup script."""
-
+import warnings
 from setuptools import setup, find_packages
+from setuptools.command.develop import develop
+from setuptools.command.install import install
+
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
@@ -15,6 +18,37 @@ requirements = ['Click>=7.0', 'requests>=2.25.0', 'humanize>=3.1.0']
 setup_requirements = ['pytest-runner', ]
 
 test_requirements = ['pytest>=3', ]
+
+class PostDevelopCommand(develop):
+    """Post-installation for development mode."""
+    def run(self):
+        develop.run(self)
+        # PUT YOUR POST-INSTALL SCRIPT HERE or CALL A FUNCTION
+
+class PostInstallCommand(install):
+    """Post-installation for installation mode."""
+    def run(self):
+        install.run(self)
+#         from couchfs.api import CouchDBClient, URLRequired
+#         try:
+#             print('connecting to couchdb')
+#             client = CouchDBClient()
+#             print('checking the db')
+#             if not client.check_db():
+#                 print('creating the db')
+#                 client.create_db()
+#         except URLRequired as e:
+#             print(f'''
+# THE INSTALLION WAS NOT COMPLETE:
+#     It is best if you have access to a couchdb instance.
+#     set th87e environment variable {CouchDBClient.URI_ENVIRON_KEY} as documented:
+#     export COUCHDB_URI='couchdb://username:password@host:port/database'
+#     then when you rerun install. Then setup.py will install a couchdb view that it uses to index your attachments in that database.
+#             ''')
+
+
+
+
 
 setup(
     author="thanos vassilakis",
@@ -32,11 +66,15 @@ setup(
         'Programming Language :: Python :: 3.8',
     ],
     description="a couchdb user space (FUSE) file system plus a cli for treating couchdb databases as a file system drives",
-    entry_points={
-        'console_scripts': [
-            'couchfs=couchfs.cli:main',
-        ],
-    },
+    entry_points='''
+        [console_scripts]
+        couchfs=couchfs.cli:cli
+    ''',
+    cmdclass={
+            'develop': PostDevelopCommand,
+            'install': PostInstallCommand,
+        },
+
     install_requires=requirements,
     license="MIT license",
     long_description=readme + '\n\n' + history,
@@ -45,9 +83,12 @@ setup(
     name='couchfs',
     packages=find_packages(include=['couchfs', 'couchfs.*']),
     setup_requires=setup_requirements,
+    extras_require = {
+            'full': ['refuse',]
+        },
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/thanos/couchfs',
-    version='0.1.0',
+    version='0.1.2',
     zip_safe=False,
 )

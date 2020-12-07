@@ -12,6 +12,11 @@ def cli():
     pass
 
 @click.command()
+def init():
+    api.CouchDBClient.init_db(logger=click.echo)
+
+
+@click.command()
 @click.argument('patterns', nargs=-1)
 def ls(patterns):
     rows = []
@@ -61,15 +66,9 @@ def download(src, dst, doc_per_path, dry_run):
 cli.add_command(ls)
 cli.add_command(upload)
 cli.add_command(download)
+cli.add_command(init)
 
 
-@click.command()
-def main(args=None):
-    """Console script for couchfs."""
-    click.echo("Replace this message by putting your code into "
-               "couchfs.cli.main")
-    click.echo("See click documentation at https://click.palletsprojects.com/")
-    return 0
 
 
 if __name__ == "__main__":

@@ -1,18 +1,8 @@
 from __future__ import print_function, absolute_import, division
 
-import logging
-
-from sys import argv, exit
-from time import time
-
-
-
-from errno import ENOENT
-from stat import S_IFDIR, S_IFLNK, S_IFREG
 from sys import argv, exit
 
-from fuse import Operations, LoggingMixIn
-
+from refuse.high import Operations, LoggingMixIn
 
 
 class FuseOperations(LoggingMixIn, Operations):
@@ -25,52 +15,54 @@ class FuseOperations(LoggingMixIn, Operations):
         self.storage = storage
 
     def chmod(self, path, mode):
-        return self.storage.chmod(path, mode)
+        raise NotImplemented()
 
     def chown(self, path, uid, gid):
-        return self.storage.chown(path, uid, gid)
+        raise NotImplemented()
 
     def create(self, path, mode):
-        return self.storage.create(path, mode)
+        raise NotImplemented()
 
     def destroy(self, path):
-        return self.storage.destroy(path)
+        raise NotImplemented()
 
     def getattr(self, path, fh=None):
-        return self.storage.getattr(path, fh)
+        raise NotImplemented()
 
     def mkdir(self, path, mode):
-        return self.storage.mkdir(path, mode)
+        raise NotImplemented()
 
     def read(self, path, size, offset, fh):
-        return self.storage.read(path, size, offset, fh)
+        raise NotImplemented()
 
     def readdir(self, path, fh):
-        return self.storage.readdir(path, fh)
+        raise NotImplemented()
 
     def readlink(self, path):
-        return self.storage.readlink(path)
+        raise NotImplemented()
 
     def rename(self, old, new):
-        return self.storage.rename(old, new)
+        raise NotImplemented()
 
     def rmdir(self, path):
-        return self.storage.rmdir(path)
+        raise NotImplemented()
 
     def symlink(self, target, source):
-        return self.storage.symlink(target, source)
+        raise NotImplemented()
 
     def truncate(self, path, length, fh=None):
-        return self.storage.truncate(path, length, fh)
+        raise NotImplemented()
 
     def unlink(self, path):
-        return self.storage.unlink(path)
+        raise NotImplemented()
 
     def utimens(self, path, times=None):
-        return self.storage.utimens(path, times)
+        raise NotImplemented()
 
     def write(self, path, data, offset, fh):
-        return self.storage.write(path, data, offset, fh)
+        raise NotImplemented()
+
+
 
 if __name__ == '__main__':
     if len(argv) != 3:

@@ -4,6 +4,7 @@ A  client api for couchdb attachments
 """
 
 """Main module."""
+import logging
 import fnmatch
 import io
 import mimetypes
@@ -15,6 +16,8 @@ from contextlib import contextmanager
 
 import requests
 
+logger = logging.getLogger(__file__)
+echo = logger.info
 
 class CouchDBClientException(Exception):
     def __init__(self, *args, **kwargs):
@@ -38,7 +41,8 @@ class CouchDBClient:
         if uri is None:
             uri = os.environ.get(self.URI_ENVIRON_KEY)
         if not uri:
-            raise URLRequired(f"You can set environment varialble {self.URI_ENVIRON_KEY}")
+            key = self.URI_ENVIRON_KEY
+            raise URLRequired(f'You can set environment varialble {key}')
         scheme, userid, psswd, host, port, db = self.parse_connection_uri(uri)
         if userid and psswd:
             self.auth = (userid, psswd)
@@ -46,6 +50,27 @@ class CouchDBClient:
             self.auth = None
         self.db = db
         self.db_uri = f'{scheme}://{host}{port}/{self.db}'
+
+    def check_db(self):
+        response = requests.head(f"{self.db_uri}", auth=self.auth)
+        return response.status_code == 200
+
+    def create_db(self):
+        response = requests.put(f"{self.db_uri}", auth=self.auth)
+        response.raise_for_status()
+
+    def save_doc(self, doc):
+        _id = doc['_id']
+        doc_uri = f'{self.db_uri}/{_id}'
+        response = requests.head(doc_uri, auth=self.auth)
+        if response.status_code == 200:
+            rev = response.headers['ETag']
+            headers = {'If-Match': rev[1:-1]}
+            response = requests.put(doc_uri, json=doc, headers=headers, auth=self.auth)
+        elif response.status_code == 404:
+            response = requests.post(self.db_uri, json=doc, auth=self.auth)
+        response.raise_for_status()
+
 
     def parse_connection_uri(self, uri):
         """
@@ -79,7 +104,7 @@ class CouchDBClient:
         if 'depth' in args:
             params['group_level'] = args['depth']
             params['reduce'] = True
-        response = requests.get(f"{self.db_uri}/_design/ls/_view/new-view", params=params, auth=self.auth)
+        response = requests.get(f"{self.db_uri}/_design/couchfs_views/_view/attachment_list", params=params, auth=self.auth)
         response.raise_for_status()
         for doc in response.json()['rows']:
             yield '/'.join(doc['key']), doc['value']
@@ -203,3 +228,28 @@ class CouchDBClient:
         response = requests.put(f'{file_uri}', data=src, headers=headers, auth=self.auth)
         response.raise_for_status()
         return file_name, f'{file_uri}', response.status_code, response.reason
+
+
+    @classmethod
+    def init_db(cls, logger=echo):
+        echo('connecting to couchdb')
+        client = cls()
+        logger('checking the db')
+        if not client.check_db():
+            logger('creating the db')
+            client.create_db()
+        _id = client.COUCHFS_VIEWS['_id']
+        logger(f'creating or updating the db {_id}')
+        client.save_doc(client.COUCHFS_VIEWS)
+        logger(f'db is now setup')
+
+    COUCHFS_VIEWS={
+      "_id": "_design/couchfs_views",
+      "views": {
+        "attachment_list": {
+          "map": "function (doc) {\n if (doc._attachments) {\n   for (const file_name in doc._attachments) {\n      emit((doc._id+'/'+file_name).split('/'), doc._attachments[file_name].length);\n  }\n} else {\n  emit(doc._id.split('/'), 0)\n}\n}",
+          "reduce": "_stats"
+        }
+      },
+      "language": "javascript"
+    }

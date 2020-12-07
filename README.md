@@ -3,13 +3,46 @@ a couchdb user space (FUSE) file system plus a cli for treating couchdb database
 
 
 [![Pypi Status](https://img.shields.io/pypi/v/couchfs.svg)](https://pypi.org/pypi/couchfs/) 
-[![Build Status](https://travis-ci.com/thanos/couchfs.svg?branch=master)](https://travis-ci.com/thanos/couchfs)
+[![Build Status](https://travis-ci.com/thanos/couchfs.svg?branch=main)](https://travis-ci.com/thanos/couchfs)
 [![Docs Status](https://readthedocs.org/projects/couchfs/badge/?version=latest)](https://couchfs.readthedocs.io/en/latest/) 
 [![Coverage Status](https://coveralls.io/repos/github/thanos/couchfs/badge.svg?branch=master)](https://coveralls.io/github/thanos/couchfs?branch=master)
 
  * Free software: MIT license
  
+## Requirements
+ * couchdb
+ 
+## Optional
+ * FUSE
+ 
 ## Features
+ - [x] a simple list command, `ls` style, for your attachments in couchdb
+ - [x] an upload command, `cp -r dir couchdb_doc` style, for storing directory hierarchy as attachments in couchdb
+ - [x] a download  command, `cp -r couchdb_doc dir` style, for dumping attachments from  couchdb
+ - [ ] fuse file system based on couchdb
+ 
+
+
+## Minimal Install
+ 1. setup your environmental variable with the right credentials 
+```
+export COUCHDB_URI='couchdb://username:password@host:port/database'
+```
+ 2. 
+ ```
+ pip install git+https://github.com/thanos/couchfs.git  
+```
+3. prime your database
+```
+% couchfs init
+
+checking the db
+creating or updating the db _design/couchfs_views
+db is now setup
+```
+Now you can use the simpe command line tools or the api.
+
+
 
 ## First the simple utils
 

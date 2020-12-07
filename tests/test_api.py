@@ -1,7 +1,7 @@
 import os
 
 import pytest
-
+import requests_mock
 from couchfs.api import CouchDBClient, BadConnectionURI, URLRequired
 
 
@@ -11,6 +11,12 @@ from couchfs.api import CouchDBClient, BadConnectionURI, URLRequired
 #
 #
 
+
+attachment_list = {"total_rows":3,"offset":0,"rows":[
+{"id":"1","key":["1"],"value":0},
+{"id":"doc-1","key":["doc-1","isis28.gif"],"value":10415},
+{"id":"doc-2","key":["doc-2"],"value":0}
+]}
 
 
 def test_connection_str():
@@ -78,13 +84,23 @@ def test_no_connection_str():
 
 
 def test_list_attchments_one_pattern():
-    assert len(list(CouchDBClient().list_attachments('TV'))) == 2
+    params = {'reduce': False, 'include_docs': False}
+    with requests_mock.Mocker() as m:
+        client = CouchDBClient()
+        m.get(f'{client.db_uri}/_design/views/_view/attachment_list?reduce=false', json=attachment_list)
+        assert len(list(client.list_attachments('doc-1'))) == 1
 
 def test_list_attchments_two_patterns():
-    assert len(list(CouchDBClient().list_attachments('TV', 'TAKIS_1'))) == 349
+    with requests_mock.Mocker() as m:
+        client = CouchDBClient()
+        m.get(f'{client.db_uri}/_design/views/_view/attachment_list?reduce=false', json=attachment_list)
+        assert len(list(client.list_attachments('doc-1','doc-2'))) == 2
 
 def test_list_attchments_no_patterns():
-    assert len(list(CouchDBClient().list_attachments())) >= 1059
+    with requests_mock.Mocker() as m:
+        client = CouchDBClient()
+        m.get(f'{client.db_uri}/_design/views/_view/attachment_list?reduce=false', json=attachment_list)
+        assert len(list(client.list_attachments())) == 3
 
 
 def test_get_attachment():
