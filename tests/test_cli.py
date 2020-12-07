@@ -5,7 +5,7 @@
 import pytest
 from click.testing import CliRunner
 
-from couchfs import couchfs
+from couchfs import cli
 
 
 @pytest.fixture
@@ -27,9 +27,9 @@ def test_content(response):
 def test_command_line_interface():
     """Test the CLI."""
     runner = CliRunner()
-    result = runner.invoke(couchfs.couchfs)
+    result = runner.invoke(cli.couchfs)
     assert result.exit_code == 0
     assert 'couchfs' in result.output
-    help_result = runner.invoke(couchfs.couchfs, ['--help'])
+    help_result = runner.invoke(cli.couchfs, ['--help'])
     assert help_result.exit_code == 0
     assert '--help  Show this message and exit.' in help_result.output

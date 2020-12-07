@@ -68,7 +68,7 @@ setup(
     description="a couchdb user space (FUSE) file system plus a cli for treating couchdb databases as a file system drives",
     entry_points='''
         [console_scripts]
-        couchfs=couchfs.cli:cli
+        couchfs=couchfs.cli:couchfs
     ''',
     cmdclass={
             'develop': PostDevelopCommand,
