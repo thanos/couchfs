@@ -1,9 +1,14 @@
 from __future__ import print_function, absolute_import, division
 
 from sys import argv, exit
-
-from refuse.high import Operations, LoggingMixIn
-
+try:
+    from refuse.high import Operations, LoggingMixIn
+except ImportError:
+    from unittest.mock import MagicMock
+    class LoggingMixIn(MagicMock):
+        pass
+    class Operations(MagicMock):
+        pass
 
 class FuseOperations(LoggingMixIn, Operations):
     '''
