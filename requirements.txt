@@ -1,4 +1,4 @@
 click==7.1.2
 humanize==3.1.0
 requests==2.25.0
-requests-mock==1.8.0
+
