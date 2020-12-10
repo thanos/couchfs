@@ -9,4 +9,5 @@ install:
   - pip install -r requirements_dev.txt
 # command to run tests
 script:
-  - pytest
+  - coverage run -m pytest tests/
+  - coveralls
