@@ -17,7 +17,7 @@ requirements = ['Click>=7.0', 'requests>=2.25.0', 'humanize>=3.1.0']
 
 setup_requirements = ['pytest-runner', ]
 
-test_requirements = ['pytest>=3', ]
+test_requirements = ['pytest>=3', 'requests-mock==1.8.0', 'coverage==4.5.4']
 
 class PostDevelopCommand(develop):
     """Post-installation for development mode."""
